@@ -16,7 +16,6 @@
 // Pour les exports JSON ////////////////////////////////////////////
 #define STR_NB "\"nb\""
 #define STR_COULEUR "\"couleur\""
-#define STR_TURN "\"trait\""
 #define STR_COLS "\"cols\""
 
 #define STR_FEN "\"fen\""
