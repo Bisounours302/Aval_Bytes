@@ -1,5 +1,3 @@
-
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <avalam.h>
@@ -14,12 +12,18 @@ int main(){
 
     p = getPositionInitiale();
 
+    EcrireJS(p, PATH_REFRESH);
+
     octet flag[3], var;
 
     CreerBonus(p, p.evolution.bonusJ, JAU, 100);
+    EcrireJS(p, PATH_REFRESH);
     CreerBonus(p, p.evolution.bonusR, ROU, 100);
+    EcrireJS(p, PATH_REFRESH);
     CreerBonus(p, p.evolution.bonusJ, JAU, p.evolution.bonusJ);
+    EcrireJS(p, PATH_REFRESH);
     CreerBonus(p, p.evolution.bonusJ, ROU, p.evolution.bonusR);
+    EcrireJS(p, PATH_REFRESH);
 
     while (getCoupsLegaux(p).nb != 0){
         printf("\nAu tout de %s\n", COLNAME(p.trait));
@@ -32,20 +36,11 @@ int main(){
         printf("\n");
 
         p = jouerCoup(p, coup.origine, coup.destination);
+        EcrireJS(p, PATH_REFRESH);
     }
 
 return 0;
 }
-
-
-
-
-
-
-
-
-
-
 
 int CreerBonus(T_Position p, octet *bonus, octet equipe, octet case_bloquee){
 
@@ -83,3 +78,35 @@ int CreerBonus(T_Position p, octet *bonus, octet equipe, octet case_bloquee){
 
     return var;
 }
+
+
+void EcrireJS(T_Position p, char* chemin){
+    FILE *f;
+    f = fopen(chemin, "w");
+    T_Score scores = evaluerScore(p);
+
+
+    if (f != NULL){
+        fprintf(f, 'traiterJson({\n
+                    "trait":%d,\n
+                    "scoreJ":%d,\n
+                    "scoreJ5":%d0,\n
+                    "scoreR":%d,\n
+                    "scoreR5":%d,\n
+                    "bonusJ":%d,\n
+                    "malusJ":%d,\n
+                    "bonusR":%d,\n
+                    "malusR":%d,\n
+                    "cols":[\n', p.trait, scores.nbJ , scores.nbJ5, scores.nbR, scores.nbR5, 
+                                p.evolution.bonusJ, p.evolution.malusJ, p.evolution.bonusR, p.evolution.malusR);
+        T_Colonne col;
+        for (int i = 0; i <= NBCASES - 2; i++){
+            col = p.cols[i];
+            fprintf(f,'\t{"nb":%d, "couleur":%d},\n', col.nb, col.couleur);
+        }
+        fprintf(f, '\t {"nb":%d, "couleur":%d}]});',p.cols[NBCASES-1].nb, p.cols[NBCASES-1].couleur);
+    }
+    fclose(f);
+}
+
+ 
