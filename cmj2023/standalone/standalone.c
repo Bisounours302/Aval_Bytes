@@ -61,16 +61,9 @@ void CreerBonus(T_Position p, octet *bonus, octet equipe, octet case_bloquee){
     scanf("%hhu", &var);
 
     do{
-        test = 1;
-        printf("%d", var);
+        printf("%d", var || var > NBCASES - 1);
         if (var < 0){
             printf("\nCase hors du plateau, redonnez une nouvelle case : ");
-            scanf("%s", &var);
-            printf("\n");
-            test = 0;
-        }
-        if (var > NBCASES - 1){
-            printf("\nCase hors du uwu plateau, redonnez une nouvelle case : ");
             scanf("%s", &var);
             printf("\n");
             test = 0;
