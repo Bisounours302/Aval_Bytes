@@ -7,7 +7,7 @@
 
 #define PATH_REFRESH "../build/web/data/refresh-data.js"
 
-ifdef __DEBUG__
+#ifdef __DEBUG__
     #define DBG 1
 #else
     #define DBG 0
