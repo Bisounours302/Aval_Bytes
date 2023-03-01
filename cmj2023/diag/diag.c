@@ -32,10 +32,7 @@ int main()
         printf("format valide, voici la chaine fen : ");
         afficher(fen);
     }
-    else
-        //la chaine n'est pas valide
-        printf("format invalide\n");
-
+    
     return 1;
 }
 //---------------------------------------------------------------------------------------------------------------------------------
@@ -105,11 +102,17 @@ int validation_1(Tchaine chaine, int nbesp)
         if( ( strlen(chaine) - 2 == indice_esp ) && ( (chaine[indice_esp + 1] == 'r') || (chaine[indice_esp + 1] == 'j') ) )
             return 1;
         else
+        {
+            printf("erreur de saisie du dernier caractere (rappel : r ou j)\n");
             return 0;
+        }
     }
+    //si la chaine ne contient pas d'espace -> la chaine n'est pas validee
     else
-        //si la chaine ne contient pas d'espace -> la chaine n'est pas validee
+    {
+        printf("erreur de saisie, il n'y a pas d'espace\n");
         return 0;
+    }
 }
 
 int validation_2(Tchaine chaine)
@@ -120,9 +123,12 @@ int validation_2(Tchaine chaine)
         if( (chaine[i]=='u') || (chaine[i]=='d') || (chaine[i]=='t') || (chaine[i]=='q') || (chaine[i]=='c') || (chaine[i]=='U') || (chaine[i]=='D') || (chaine[i]=='T') || (chaine[i]=='Q') || (chaine[i]=='C') || (chaine[i]=='0') || (chaine[i]=='1') || (chaine[i]=='2') || (chaine[i]=='3') || (chaine[i]=='4') || (chaine[i]=='5') || (chaine[i]=='6') || (chaine[i]=='7') || (chaine[i]=='8') || (chaine[i]=='9') || (chaine[i]==' ') )
             //si oui -> validation numero 2
             return 1;
+        //si non -> la chaine n'est pas validee
         else
-            //si non -> la chaine n'est pas validee
+        {
+            printf("erreur de saisie, au moins un caractere n'est pas correct (rappel : u, U, d, D, t, T, q, Q, c, C, ' ', r ou j)\n");
             return 0;
+        }
     }
 }
 
@@ -183,7 +189,10 @@ int validation_3(Tchaine chaine)
     if(somme == 48)     //si somme vaut 48 -> validation numero 3 !
         return 1;
     else if(somme > 48) //si somme > 48 alors la chaine n'est pas validee
+    {
+        printf("erreur de saisie, le nombre de pions est trop grand (rappel : nombre de pions <= 48)\n");
         return 0;
+    }
     else                //si somme < 48 alors la modification de la chaine commence...
     {
         indice_esp = rechercher_esp(chaine); //tout d'abord on recherche la position du caractere ' '
@@ -246,11 +255,11 @@ int validation_3(Tchaine chaine)
                 chaine[indice_esp + 1] = ' ';
                 chaine[indice_esp + 2] = aux;
                 chaine[indice_esp + 3] = '\0';
-            }
-            
+            }  
         }
         
         //la chaine a ete modifiee, elle est donc validee
+        printf("apres ajustement, ");
         return 1;
     }
     printf("\n");
