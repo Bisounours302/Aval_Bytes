@@ -30,19 +30,19 @@ int main(){
     EcrireJS(p, PATH_REFRESH);
     CreerBonus(p, &p.evolution.bonusR, ROU, 100);
     EcrireJS(p, PATH_REFRESH);
-    CreerBonus(p, &p.evolution.bonusJ, JAU, p.evolution.bonusJ);
+    CreerBonus(p, &p.evolution.malusJ, JAU, p.evolution.bonusJ);
     EcrireJS(p, PATH_REFRESH);
-    CreerBonus(p, &p.evolution.bonusJ, ROU, p.evolution.bonusR);
+    CreerBonus(p, &p.evolution.malusR, ROU, p.evolution.bonusR);
     EcrireJS(p, PATH_REFRESH);
 
     while (getCoupsLegaux(p).nb != 0){
         printf("\nAu tour de %s\n", COLNAME(p.trait));
 
         printf("\nChoisissez l origine du coup: ");
-        scanf("%s", &coup.origine);
+        scanf("%hhu", &coup.origine);
 
         printf("\n\nChoisissez la destination du coup : ");
-        scanf("%s", &coup.destination);
+        scanf("%hhu", &coup.destination);
         printf("\n");
 
         p = jouerCoup(p, coup.origine, coup.destination);
@@ -61,22 +61,23 @@ void CreerBonus(T_Position p, octet *bonus, octet equipe, octet case_bloquee){
     scanf("%hhu", &var);
 
     do{
-        printf("%d", var || var > NBCASES - 1);
-        if (var < 0){
+        test = 1;
+        printf("%d", var);
+        if (var < 0 || var > NBCASES - 1){
             printf("\nCase hors du plateau, redonnez une nouvelle case : ");
-            scanf("%s", &var);
+            scanf("%hhu", &var);
             printf("\n");
             test = 0;
         }
         if (test == 1 && equipe != p.cols[var].couleur){
             printf("\nCase de mauvaise couleur, redonnez une nouvelle case : ");
-            scanf("%s", &var);
+            scanf("%hhu", &var);
             printf("\n");
             test = 0;
         }
         if (test == 1 && var == case_bloquee){
             printf("\nCase deja prise pour le bonus, redonnez une nouvelle case : ");
-            scanf("%s", &var);
+            scanf("%hhu", &var);
             printf("\n");
             test = 0;
         } 
