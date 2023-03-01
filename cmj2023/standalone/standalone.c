@@ -17,6 +17,8 @@ void EcrireJS(T_Position p, char* chemin);
 void CreerBonus(T_Position p, octet *bonus, octet equipe, octet case_bloquee);
 
 int main(){
+    unsetenv("GTK_MODULES");
+    system ("xdg-open ../build/web/avalam-refresh.html");
     T_Position p;
     T_Coup coup;
 
@@ -48,7 +50,21 @@ int main(){
         p = jouerCoup(p, coup.origine, coup.destination);
         EcrireJS(p, PATH_REFRESH);
     }
+    if(evaluerScore(p).nbJ==evaluerScore(p).nbR)
+	{
+		if(evaluerScore(p).nbJ5<evaluerScore(p).nbR5) {
+			printf("\nRouge gagnant\n"); 
+		} else {
+			printf("\nJaune gagnant\n");
+		}
+	}
 
+    else if (evaluerScore(p).nbJ<evaluerScore(p).nbR) {
+		printf("\nRouge gagnant\n");
+	} 
+    else { 
+		printf("\nJaune gagnant\n");
+	}
 return 0;
 }
 
@@ -62,7 +78,6 @@ void CreerBonus(T_Position p, octet *bonus, octet equipe, octet case_bloquee){
 
     do{
         test = 1;
-        printf("%d", var);
         if (var < 0 || var > NBCASES - 1){
             printf("\nCase hors du plateau, redonnez une nouvelle case : ");
             scanf("%hhu", &var);
@@ -94,7 +109,9 @@ void EcrireJS(T_Position p, char* chemin){
 
 
     if (f != NULL){
-        fprintf(f, "traiterJson({\n\"trait\":%d,\n\"scoreJ\":%d,\n\"scoreJ5\":%d0,\n\"scoreR\":%d,\n\"scoreR5\":%d,\n\"bonusJ\":%d,\n\"malusJ\":%d,\n\"bonusR\":%d,\n\"malusR\":%d,\n\"cols\":[\n", p.trait, scores.nbJ , scores.nbJ5, scores.nbR, scores.nbR5,p.evolution.bonusJ, p.evolution.malusJ, p.evolution.bonusR, p.evolution.malusR);
+        fprintf(f, "traiterJson({\n\"trait\":%d,\n\"scoreJ\":%d,\n\"scoreJ5\":%d0,\n\"scoreR\":%d,\n\"scoreR5\":%d,\n\"bonusJ\":%d,\n\"malusJ\":%d,\n\"bonusR\":%d,\n\"malusR\":%d,\n\"cols\":[\n", 
+        p.trait, scores.nbJ , scores.nbJ5, scores.nbR, scores.nbR5,p.evolution.bonusJ, 
+        p.evolution.malusJ, p.evolution.bonusR, p.evolution.malusR);
         T_Colonne col;
         for (int i = 0; i <= NBCASES - 2; i++){
             col = p.cols[i];
