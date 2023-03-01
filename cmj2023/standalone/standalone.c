@@ -36,7 +36,7 @@ int main(){
     EcrireJS(p, PATH_REFRESH);
 
     while (getCoupsLegaux(p).nb != 0){
-        printf("\nAu tout de %s\n", COLNAME(p.trait));
+        printf("\nAu tour de %s\n", COLNAME(p.trait));
 
         printf("\nChoisissez l origine du coup: ");
         scanf("%s", &coup.origine);
@@ -54,35 +54,40 @@ return 0;
 
 void CreerBonus(T_Position p, octet *bonus, octet equipe, octet case_bloquee){
 
-    octet var, test = 0;
-
+    octet var = 0;
+    int test = 0;
 
     printf ("\nEn quelle position placez-vous le bonus/malus ? ");
-    scanf("%s", &var);
+    scanf("%hhu", &var);
 
-    while(test == 0){
-
-            test = 1;
-
-            if (var < 0 || var > NBCASES){
-                printf("\nCase hors du plateau, redonnez une nouvelle case : ");
-                scanf("%s", &var);
-                printf("\n");
-                test = 0;
-            }
-            if (test == 1 && equipe != p.cols[var].couleur){
-                printf("\nCase de mauvaise couleur, redonnez une nouvelle case : ");
-                scanf("%s", &var);
-                printf("\n");
-                test = 0;
-            }
-            if (test == 1 && var == case_bloquee){
-                printf("\nCase  deja prise pour le bonus, redonnez une nouvelle case : ");
-                scanf("%s", &var);
-                printf("\n");
-                test = 0;
-            } 
-    }
+    do{
+        test = 1;
+        printf("%d", var);
+        if (var < 0){
+            printf("\nCase hors du plateau, redonnez une nouvelle case : ");
+            scanf("%s", &var);
+            printf("\n");
+            test = 0;
+        }
+        if (var > NBCASES - 1){
+            printf("\nCase hors du uwu plateau, redonnez une nouvelle case : ");
+            scanf("%s", &var);
+            printf("\n");
+            test = 0;
+        }
+        if (test == 1 && equipe != p.cols[var].couleur){
+            printf("\nCase de mauvaise couleur, redonnez une nouvelle case : ");
+            scanf("%s", &var);
+            printf("\n");
+            test = 0;
+        }
+        if (test == 1 && var == case_bloquee){
+            printf("\nCase deja prise pour le bonus, redonnez une nouvelle case : ");
+            scanf("%s", &var);
+            printf("\n");
+            test = 0;
+        } 
+    }while(test == 0);
 
     *bonus = var;
 }
