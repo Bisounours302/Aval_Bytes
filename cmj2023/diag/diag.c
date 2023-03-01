@@ -11,16 +11,18 @@ char *lire(char* lachaine,int nbMAXcaracAsaisir);   //lit une chaine et retourne
 void afficher(Tchaine chaine);                      //affiche la chaine fen
 int format(Tchaine chaine, int nbesp);              //retourne 1 si la chaine est au bon format
 int rechercher_esp(Tchaine chaine);                 //retourne l'indice du caractere ' ' dans la chaine
-int validation_1(Tchaine chaine, int nbesp);        //verifie les 2 derniers caracteres (espace et r/j)     retourne 1 si validation
-int validation_2(Tchaine chaine);                   //verifie la validite des caracteres                    retourne 1 si validation
-int validation_3(Tchaine chaine);                   //verifie que le nombre de pions vaut 45                retourne 1 si validation
+int validation_1(Tchaine chaine, int nbesp);        //verifie les 2 derniers caracteres (espace et r/j)     
+int validation_2(Tchaine chaine);                   //verifie la validite des caracteres                                    
+int validation_3(Tchaine chaine);                   //verifie que les bonus /malus sont attribues           
+int validation_4(Tchaine chaine);                   //verifie que la quantite de bonus ne depasse pas le nombre de pions dans la tour
+int validation_5(Tchaine chaine);                   //verifie que le nombre de pions vaut 48
 //---------------------------------------------------------------------------------------------------------------------------------
 // DEBUT DE LA FONCTION MAIN
 //---------------------------------------------------------------------------------------------------------------------------------
 int main()
 {
     //---------------------------------------------------------------------------------------------------------------------------------
-    // DECLARATIONS ET INITIALISATION
+    // DECLARATIONS ET INITIALISATIONS
     Tchaine fen;        //declaration d'un tableau fen de type Tchaine
     int nbespace = 0;   //compteur d'occurrence du caractere ' ' dans la chaine
     //---------------------------------------------------------------------------------------------------------------------------------   
@@ -82,17 +84,35 @@ void afficher(Tchaine chaine)
 
 int format(Tchaine chaine, int nbesp)
 {
-    //si les 3 validations retournent 1 la fonction format retournera aussi 1 !
-    if( (!validation_1(chaine, nbesp) ) || (!validation_2(chaine) ) || (!validation_3(chaine) ) )
+    //si les 5 validations retournent 1 la fonction format retournera aussi 1 !
+    if( ( !validation_1(chaine, nbesp) ) || ( !validation_2(chaine) ) || ( !validation_3(chaine) ) )
         return 0;
     else
-        return 1;
+        if( !validation_4(chaine) )
+            return 0;
+        else
+        {
+            if( !validation_5(chaine) )
+                return 0;
+            else
+            {
+                printf("- Apres ajustement, ");
+                return 1;
+            }
+        }
+}
+
+int rechercher_esp(Tchaine chaine)
+{
+    for(int i=0; i < strlen(chaine); i++)
+        if(chaine[i]==' ')
+            return i;
+    return 0;
 }
 
 int validation_1(Tchaine chaine, int nbesp)
-{   //---------------------------------------------------------------------------------------------------------------------------------
+{   
     int indice_esp;     //indice_esp est la valeur de l'indice ou se trouve le caractere ' '
-    //---------------------------------------------------------------------------------------------------------------------------------
 
     if(nbesp == 1)  //si la chaine contient 1 espace
     {
@@ -103,36 +123,112 @@ int validation_1(Tchaine chaine, int nbesp)
             return 1;
         else
         {
-            printf("erreur de saisie du dernier caractere (rappel : r ou j)\n");
+            printf("- Erreur de saisie du dernier caractere (rappel : r ou j)\n");
             return 0;
         }
     }
     //si la chaine ne contient pas d'espace -> la chaine n'est pas validee
     else
     {
-        printf("erreur de saisie, il n'y a pas d'espace\n");
+        printf("- Le trait n'est pas defini (rappel : les 2 derniers caracteres sont ' ' puis 'r' ou 'j')\n");
         return 0;
     }
 }
 
 int validation_2(Tchaine chaine)
 {
-    for(int i=0; i < strlen(chaine); i++)
+    for(int i=0; i < strlen(chaine) - 2; i++)
     {
-        //verifie si tous les caracteres sont parmi cette liste : ['u', 'U', 'd', 'D', 't', 'T', 'q', 'Q', 'c', 'C', 'r', 'j', ' ']
-        if( (chaine[i]=='u') || (chaine[i]=='d') || (chaine[i]=='t') || (chaine[i]=='q') || (chaine[i]=='c') || (chaine[i]=='U') || (chaine[i]=='D') || (chaine[i]=='T') || (chaine[i]=='Q') || (chaine[i]=='C') || (chaine[i]=='0') || (chaine[i]=='1') || (chaine[i]=='2') || (chaine[i]=='3') || (chaine[i]=='4') || (chaine[i]=='5') || (chaine[i]=='6') || (chaine[i]=='7') || (chaine[i]=='8') || (chaine[i]=='9') || (chaine[i]==' ') )
+        //verifie si tous les caracteres sont parmi cette liste : ['u', 'U', 'd', 'D', 't', 'T', 'q', 'Q', 'c', 'C', 'b', 'B', 'm', 'M']
+        if( (chaine[i]=='u') || (chaine[i]=='d') || (chaine[i]=='t') || (chaine[i]=='q') || (chaine[i]=='c') || (chaine[i]=='U') || (chaine[i]=='D') || (chaine[i]=='T') || (chaine[i]=='Q') || (chaine[i]=='C') || (chaine[i]=='0') || (chaine[i]=='1') || (chaine[i]=='2') || (chaine[i]=='3') || (chaine[i]=='4') || (chaine[i]=='5') || (chaine[i]=='6') || (chaine[i]=='7') || (chaine[i]=='8') || (chaine[i]=='9') || (chaine[i]=='b') || (chaine[i]=='B') || (chaine[i]=='m') || (chaine[i]=='M') )
             //si oui -> validation numero 2
             return 1;
         //si non -> la chaine n'est pas validee
         else
         {
-            printf("erreur de saisie, au moins un caractere n'est pas correct (rappel : u, U, d, D, t, T, q, Q, c, C, ' ', r ou j)\n");
+            printf("- Au moins un caractere n'est pas correct (rappel : u, U, d, D, t, T, q, Q, c, C, b, B, m, M)\n");
             return 0;
         }
     }
 }
 
 int validation_3(Tchaine chaine)
+{
+    int b=0, B=0, m=0, M=0; //compteur pour chaque bonus/malus
+
+    for(int i=1; i < strlen(chaine) - 2; i++)   //ajoute 1 au compteur associé
+    {
+        if(chaine[i] == 'b')
+            b++;
+        if(chaine[i] == 'B')
+            B++;
+        if(chaine[i] == 'm')
+            m++;
+        if(chaine[i] == 'M')
+            M++;
+    }
+    
+    if(b && B && m && M)    //verifie que chaque bonus/malus n'est present qu'une seule fois
+        return 1;   //si oui -> verifacaion numero 3
+    else
+    {
+        //si non, la chaine n'est pas validée
+        printf("- Erreur de saisie des bonus/malus (rappel : chacun des bonus/malus 'b', 'B', 'm' ou 'M' doit etre present UNE fois\n");
+        return 0;
+    }
+}
+
+int validation_4(Tchaine chaine)
+{
+    int nb_bonus=0; //compteur de bonus/malus present dans une pile
+
+    for(int i = strlen(chaine) - 3; i>=0; i--)  //lecture des caracteres de droite a gauche
+    {
+        if( (chaine[i] == 'b') || (chaine[i] == 'B') || (chaine[i] == 'm') || (chaine[i] == 'M') )
+            nb_bonus++; //si le caractere est un bonus/malus, on ajoute 1 au compteur
+        else
+        {
+            //si ce n'est pas un bonus/malus 
+            //on verifie que le nombre de pions dans la pile soit superieur au nombre de bonus/malus
+            if(nb_bonus >= 2)   //ça ne sert a rien de verifier si nb_bonus vaut 1 ou 0
+            {
+                //comparaison grâce au switch
+                //si nb_bonus est plus grand que le nombre de pion dans la pile alors la chaine n'est pas validée
+                //ça ne sert a rien de verifier pour les piles de 4 et 5 car le nombre max de nb_bonus vaut 4
+                switch(chaine[i])
+                {
+                    case 'u' :
+                    case 'U' : 
+                        printf("- Plusieurs bonus/malus attribues sur un pion seul\n");
+                        return 0;
+                    
+                    case 'd' :
+                    case 'D' :
+                        if(nb_bonus > 2)
+                        {
+                            printf("- Trop de malus/bonus attribues sur une pile de 2 pions\n");
+                            return 0;
+                        }
+                        break;
+
+                    case 't' :
+                    case 'T' :
+                        if(nb_bonus > 3)
+                        {
+                            printf("- Trop de malus/bonus attribues sur une pile de 3 pions\n");
+                            return 0;
+                        }
+                        break;
+                }
+            }
+            nb_bonus = 0;
+        }
+    }
+    //si aucune erreur n'est rencontée -> validation numéro 4
+    return 1;
+}
+
+int validation_5(Tchaine chaine)
 {
     //---------------------------------------------------------------------------------------------------------------------------------
     // declarations et initialisations
@@ -174,23 +270,32 @@ int validation_3(Tchaine chaine)
                 nb_element++;
             }
         } 
-        //le caractere est une lettre
         else
         {
-            //on stocke 1 dans Tab48
-            Tab48[i] = 1;
-            nb_element++;
+            //le caractere est un bonus/malus
+            if((chaine[i] == 'b') || (chaine[i] == 'B') || (chaine[i] == 'm') || (chaine[i] == 'M'))
+            {
+                //on stocke 0 dans Tab48
+                Tab48[i] = 0;
+                nb_element++;
+            }
+            else
+            {
+                //on stocke 1 dans Tab48
+                Tab48[i] = 1;
+                nb_element++;
+            }
         }
     }
 
     for(int i=0; i < nb_element; i++)   //calcul de la sommme des elements de Tab48
         somme += Tab48[i];
 
-    if(somme == 48)     //si somme vaut 48 -> validation numero 3 !
+    if(somme == 48)     //si somme vaut 48 -> validation numero 5 !
         return 1;
     else if(somme > 48) //si somme > 48 alors la chaine n'est pas validee
     {
-        printf("erreur de saisie, le nombre de pions est trop grand (rappel : nombre de pions <= 48)\n");
+        printf("- Le nombre de pions est trop grand (rappel : nombre de pions <= 48)\n");
         return 0;
     }
     else                //si somme < 48 alors la modification de la chaine commence...
@@ -258,18 +363,10 @@ int validation_3(Tchaine chaine)
             }  
         }
         
-        //la chaine a ete modifiee, elle est donc validee
-        printf("apres ajustement, ");
+        //la chaine a ete modifiée, elle est donc validée
         return 1;
     }
     printf("\n");
 
     return 1;
-}
-
-int rechercher_esp(Tchaine chaine)
-{
-    for(int i=0; i < strlen(chaine); i++)
-        if(chaine[i]==' ')
-            return i;
 }
