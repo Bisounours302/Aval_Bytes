@@ -1,9 +1,22 @@
+//Auteurs :  Noé Mejdoub / Mathieu Retourné / Mathis Pollet--Dassonval / Geoffrey Ramos
 #include <stdio.h>
 #include <string.h>
+#include "avalam.h"
+//---------------------------------------------------------------------------------------------------------------------------------
+// MODE DEBUG
+//---------------------------------------------------------------------------------------------------------------------------------
+#ifdef __DEBUG__
+  #define DBG 1
+#else
+  #define DBG 0
+#endif
 //---------------------------------------------------------------------------------------------------------------------------------
 #define MAXCAR 50 // au max a l'initialisation -> 24 u + 24 U + espace + j
+#define NOM_PAR_DEFAUT 
+#define TAILLE_DESCRIPTION 100
 //---------------------------------------------------------------------------------------------------------------------------------
 typedef char Tchaine[MAXCAR];
+typedef int Tformat[MAXCAR - 2];
 //---------------------------------------------------------------------------------------------------------------------------------
 // PROTOTYPES DES FONCTIONS
 //---------------------------------------------------------------------------------------------------------------------------------
@@ -11,35 +24,191 @@ char *lire(char* lachaine,int nbMAXcaracAsaisir);   //lit une chaine et retourne
 void afficher(Tchaine chaine);                      //affiche la chaine fen
 int format(Tchaine chaine, int nbesp);              //retourne 1 si la chaine est au bon format
 int rechercher_esp(Tchaine chaine);                 //retourne l'indice du caractere ' ' dans la chaine
-int validation_1(Tchaine chaine, int nbesp);        //verifie les 2 derniers caracteres (espace et r/j)     
-int validation_2(Tchaine chaine);                   //verifie la validite des caracteres                                    
-int validation_3(Tchaine chaine);                   //verifie que les bonus /malus sont attribues           
-int validation_4(Tchaine chaine);                   //verifie que la quantite de bonus ne depasse pas le nombre de pions dans la tour
-int validation_5(Tchaine chaine);                   //verifie que le nombre de pions vaut 48
+int validation_1(Tchaine chaine, int nbesp);        //verifie les 2 derniers caracteres (espace et r/j)     retourne 1 si validation
+int validation_2(Tchaine chaine);                   //verifie la validite des caracteres                    retourne 1 si validation
+int validation_3(Tchaine chaine);                   //verifie que le nombre de pions vaut 45                retourne 1 si validation
+int validation_4(Tchaine chaine);                                                               //verifie que la quantite de bonus ne depasse pas le nombre de pions dans la tour
+int validation_5(Tchaine chaine);                                                               //verifie que le nombre de pions vaut 48
+void create_Tab(Tchaine chaine, Tchaine Tabnb, Tchaine Tabcouleur);
+void Json(int formatnb[],int formatcolor[],char trait,char description[],int numdiag, Tchaine numfen, int bonusJ, int bonusR, int malusJ, int malusR);
 //---------------------------------------------------------------------------------------------------------------------------------
 // DEBUT DE LA FONCTION MAIN
 //---------------------------------------------------------------------------------------------------------------------------------
 int main()
 {
     //---------------------------------------------------------------------------------------------------------------------------------
-    // DECLARATIONS ET INITIALISATIONS
+    // DECLARATIONS ET INITIALISATION
     Tchaine fen;        //declaration d'un tableau fen de type Tchaine
     int nbespace = 0;   //compteur d'occurrence du caractere ' ' dans la chaine
+    int Ndiag = 0;
+    char Nomfichier;
+    char Notes;
+    Tformat Tabnb;
+    Tformat Tabcouleur;
+    char trait;
+   	int bonusJ, malusJ, bonusR, malusR;
+    int nb_piles = 0;
     //---------------------------------------------------------------------------------------------------------------------------------   
-    nbespace = lire(fen, MAXCAR);   //lit la chaine et retourne le nombre d'espace dans la chaine 
+    //LECTECTURE DU FEN ET DU NUMERO DE DIAG RAMME------------------------------------------------------------------------------------
+
+    if (argc > 4 || argc < 3) {
+        throw("erreur:la synthaxe attendue est: diag.exe <numero_de_diagramme> \"<position_type_FEN>\"");
+    }
+    //------------------------------------------------------------------------------------
+    // VERIFICTION NUMERO DIAGRAMME------------------------------------------------------------------------------------
+    if (!isdigit(atoi(argv[1]))){
+        throw("erreur:le numero de diagramme est le premier argument et il doit ne doit contenir que des chiffres");
+    else Ndiag = atoi(argv[1]);
+    }
+    //------------------------------------------------------------------------------------
+
+
+    //VERIFICATION FEN
+     nbespace = lire(fen, MAXCAR);   //lit la chaine et retourne le nombre d'espace dans la chaine 
 
     if(format(fen, nbespace))       //verification du format de la chaine
     {
         //la chaine est valide
         printf("format valide, voici la chaine fen : ");
         afficher(fen);
+
+        trait = fen[strlen(fen) - 1];
+
+        if(trait == 'j')
+            trait = '1';
+        else
+            trait = '2';
+
+		printf("- trait : %c\n", trait);
+
+
+        for(int i=0; i < strlen(fen) - 2; i++) // pour tous les caracteres sauf les 2 derniers qui ont deja ete verifies
+        {
+            if( (fen[i]=='0') || (fen[i]=='1') || (fen[i]=='2') || (fen[i]=='3') || (fen[i]=='4') || (fen[i]=='5') || (fen[i]=='6') || (fen[i]=='7') || (fen[i]=='8') || (fen[i]=='9') )
+            {
+                //et que le suivant l'est aussi
+                if( (fen[i + 1]=='0') || (fen[i + 1]=='1') || (fen[i + 1]=='2') || (fen[i + 1]=='3') || (fen[i + 1]=='4') || (fen[i + 1]=='5') || (fen[i + 1]=='6') || (fen[i + 1]=='7') || (fen[i + 1]=='8') || (fen[i + 1]=='9') )
+                {
+                    nb_piles += (fen[i] - 48) * 10 + fen[i + 1] - 48;
+                }
+                //il n'y a qu'un seul chiffre
+                else
+                {
+                    //on le stocke dans Tab48
+                    nb_piles += fen[i] - 48;
+                }
+            } 
+            else
+            {
+                //si le caractere est un bonus/malus
+                if((fen[i] == 'b') || (fen[i] == 'B') || (fen[i] == 'm') || (fen[i] == 'M'))
+                {
+                    switch(fen[i])
+                    {
+                        case 'b' :
+                            bonusJ = nb_piles;
+                            break;
+                    
+                        case 'B' :
+                            bonusR = nb_piles;
+                            break;
+
+                        case 'm' :
+                            malusJ = nb_piles;
+                            break;
+                    
+                        case 'M' :
+                            malusR = nb_piles;
+                            break;
+                    }
+                }
+                else
+                {
+                    nb_piles++;
+                }
+            }
+        }
+        
+        printf("- bonusJ : %d\n", bonusJ-1);
+        printf("- bonusR : %d\n", bonusR-1);
+        printf("- malusJ : %d\n", malusJ-1);
+        printf("- malusR : %d\n", malusR-1);
+
+        create_Tab(fen, Tabnb, Tabcouleur);
+        Json(Tabnb, Tabcouleur, trait,Notes, Ndiag, fen, bonusJ, bonusR, malusJ, malusR);
     }
     
-    return 1;
+
+//---------------------------------------------------------------------------------------------------------------------------------
+// DEMANDE DU NOM DU FICHIER---------------------------------------------------------------------------------------------------------------------------------
+
+char choix = 0;
+printf("Voulez vous nommer le fichier de sortie? O/N");
+scanf("%c",&choix);
+while ((toupper(choix) != O) || (toupper(choix) != N)){
+printf("Réponse incorrect, voulez vous nommer le fichier de sortie? O/N");
+}
+if(toupper(choix) == O){
+  printf("Nom du fichier:");
+  fgets(Nomfichier,50,stdin);
+} else {
+  strcpy(Nomfichier, NOM_DU_FICHIER);
 }
 //---------------------------------------------------------------------------------------------------------------------------------
+// DEMANDE DE LA DESCRIPTION---------------------------------------------------------------------------------------------------------------------------------
+
+if(fgets(Lirenotes, TAILLE_DESCRIPTION, stdin) != NULL)
+    {
+    	//printfdbg("Debug : Chaine lu : %s\n", lecturedescription);
+    	//printfdbg("Debug : Chaine description : %s\n", description);
+    	//printfdbg("Debug : Taille de la description : %d\n", (int) strlen(description));
+    	strncat(Notes,Lirenotes, TAILLE_DESCRIPTION - strlen(Notes) -1); // on retire la taille de la description et 1 pour ne passer dépasser la tailel de l'espace mémoire et pour garder un caractère pour le caractère de fin
+    }
+	else {
+ 		printf("Entrez une description de moins de %d caracteres", TAILLE_DESCRIPTION);
+		scanf("%s", Notes);
+	}
+		
+    int Lennotes=(int) strlen(description);
+	int j=0;
+    int i=0;
+    //printf("%d\n", Lennotes); (test)
+    for (i = 0; i <= Lennotes; ++i){
+    	//printf("%d\n", i);
+    		if (Notes[i]=='\n'){
+    			printfdbg("Debug : passage à la ligne détecté %d\n", i);
+    			
+    			char temp[TAILLE_DESCRIPTION];
+    			strcpy(temp,description);
+    			Notes[i]='<'; 
+    			Notes[i+1]='b'; 
+    			Notes[i+2]='r'; 
+    			Notes[i+3]='>'; 
+				Lennotes = Lennotes + 3;  //on a agrandi la chaine il ne faut pas oublier de le spécifier
+    			for (j = i; j <= Lennotes; ++j){
+    		//On supprime la derniere balise inutile
+    				Notes[j+4]=temp[j+1];
+    				Notes[j+5]='\0';
+    			}
+            }
+    }
+
+
+
+
+    // CREATION/REDACTION JSON---------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
 // FIN DE LA FONCTION MAIN
-//---------------------------------------------------------------------------------------------------------------------------------
+}
 // FONCTIONS
 //---------------------------------------------------------------------------------------------------------------------------------
 char *lire(char* lachaine,int nbMAXcaracAsaisir)
@@ -369,4 +538,148 @@ int validation_5(Tchaine chaine)
     printf("\n");
 
     return 1;
+}
+
+void create_Tab(Tchaine chaine, Tchaine Tabnb, Tchaine Tabcouleur)
+{
+    int j=0, l=0;
+
+    for(int i=0; i < strlen(chaine); i++)
+    {
+        if( (chaine[i]=='0') || (chaine[i]=='1') || (chaine[i]=='2') || (chaine[i]=='3') || (chaine[i]=='4') || (chaine[i]=='5') || (chaine[i]=='6') || (chaine[i]=='7') || (chaine[i]=='8') || (chaine[i]=='9') )
+        {
+            //et que le suivant l'est aussi
+            if( (chaine[i + 1]=='0') || (chaine[i + 1]=='1') || (chaine[i + 1]=='2') || (chaine[i + 1]=='3') || (chaine[i + 1]=='4') || (chaine[i + 1]=='5') || (chaine[i + 1]=='6') || (chaine[i + 1]=='7') || (chaine[i + 1]=='8') || (chaine[i + 1]=='9') )
+            {
+                //on prend le premier chiffre pour celui des dizaines et le suivant pour celui des unites afin de stocker le resultat dans Tab48
+                j = (chaine[i] - 48) * 10 + chaine[i + 1] - 48;  // on fait -48 a cause du code ascii du caractere 
+                printf("- j = %d\n", j);
+
+                for(int k=0; k < j; k++)
+                {
+                    Tabnb[l] = 0;
+                    Tabcouleur[l] = 0;
+                    l++;
+                }
+
+                i++;
+            }
+            //il n'y a qu'un seul chiffre
+            else
+            {
+                j = chaine[i] - 48 ;
+
+                for(int k=0; k < j; k++)
+                {
+                    Tabnb[l] = 0;
+                    Tabcouleur[l] = 0;
+                    l++;
+                }
+            }
+        }
+        else
+        {
+            switch(chaine[i])
+            {
+                case 'u' :
+                    Tabnb[l] = 1;
+                    Tabcouleur[l] = 1;
+                    l++;
+                    break;
+                
+                case 'U' :
+                    Tabnb[l] = 1;
+                    Tabcouleur[l] = 2;
+                    l++;
+                    break;
+                
+                case 'd' :
+                    Tabnb[l] = 2;
+                    Tabcouleur[l] = 1;
+                    l++;
+                    break;
+                
+                case 'D' :
+                    Tabnb[l] = 2;
+                    Tabcouleur[l] = 2;
+                    l++;
+                    break;
+
+                case 't' :
+                    Tabnb[l] = 3;
+                    Tabcouleur[l] = 1;
+                    l++;
+                    break;
+                
+                case 'T' :
+                    Tabnb[l] = 3;
+                    Tabcouleur[l] = 2;
+                    l++;
+                    break;
+                
+                case 'q' :
+                    Tabnb[l] = 4;
+                    Tabcouleur[l] = 1;
+                    l++;
+                    break;
+                
+                case 'Q' :
+                    Tabnb[l] = 4;
+                    Tabcouleur[l] = 2;
+                    l++;
+                    break;
+
+                case 'c' :
+                    Tabnb[l] = 5;
+                    Tabcouleur[l] = 1;
+                    l++;
+                    break;
+                
+                case 'C' :
+                    Tabnb[l] = 5;
+                    Tabcouleur[l] = 2;
+                    l++;
+                    break;
+            }
+        }
+    }
+
+    for(int m=0; m < 50; m++)
+    {
+        printf("\n%d", Tabnb[m]);
+    }
+    for(int m=0; m < 50; m++)
+    {
+        printf("\n%d", Tabcouleur[m]);
+    }
+}
+
+void Json(int formatnb[],int formatcolor[],char trait,char description[],int numdiag, Tchaine numfen, int bonusJ, int bonusR, int malusJ, int malusR)
+{
+	printf("Debug : Appel de la fonction json export réussi ! \n");
+	FILE* json=fopen("../web/exemples/diag_initial.js", "w"); // on ouvre le fichier avec w+ pour supprimer le contenu au préalable et récrire à chaque fois, utile car on veut générer un fichier à chaque coup
+	if(json != NULL)
+    {
+        
+		// tous les STR_.. sont dans avalam.h je n'ai fais que suivre ce que le prof a déjà écrit pour la structure json, ca évite d'écrire par exemple \"nb\" on met juste STR_NB avec un %s dans le fprintf et c'est réglé
+		fprintf(json,"traiterJson({\n\"%s\":%d,","trait ",trait-48);
+		fprintf(json,"\n\"numDiag\":%d,",numdiag);
+		fprintf(json,"\n\"notes\":\"%s\",",description);
+		fprintf(json,"\n\"fen\":\"%s\"", numfen);
+        fprintf(json,"\n\"bonusJ\":%d", bonusJ);
+        fprintf(json,"\n\"bonusR\":%d", bonusR);
+        fprintf(json,"\n\"malusJ\":%d", malusJ);
+        fprintf(json,"\n\"malusJ\":%d", malusJ);
+        fprintf(json,"\n%s:[",STR_COLS);
+		for (int i = 0; i < NBCASES; ++i)
+		{
+			fprintf(json,"\n\t{%s:%d, %s:%d},",STR_NB,formatnb[i],STR_COULEUR,formatcolor[i]);//boucle des positions
+			//printf("\n%c\n%c", formatnb[i],formatcolor[i]);
+		}
+		fprintf(json,"\n]\n});");
+	    fclose(json); // on close le fichier à chaque fin d'édition pour libérer la mémoire
+	    printf("\n => Export Json terminé (chemin de fichier : ../web/exemples/diag_initial.js) ! \n");
+        
+	}
+	else{}
 }
