@@ -1,6 +1,8 @@
 //Auteurs :  Noé Mejdoub / Mathieu Retourné / Mathis Pollet--Dassonval / Geoffrey Ramos
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
+#include <ctype.h>
 #include "avalam.h"
 //---------------------------------------------------------------------------------------------------------------------------------
 // MODE DEBUG
@@ -12,8 +14,9 @@
 #endif
 //---------------------------------------------------------------------------------------------------------------------------------
 #define MAXCAR 50 // au max a l'initialisation -> 24 u + 24 U + espace + j
-#define NOM_PAR_DEFAUT 
+#define NOM_PAR_DEFAUT "diag.txt"
 #define TAILLE_DESCRIPTION 100
+
 //---------------------------------------------------------------------------------------------------------------------------------
 typedef char Tchaine[MAXCAR];
 typedef int Tformat[MAXCAR - 2];
@@ -34,7 +37,7 @@ void Json(int formatnb[],int formatcolor[],char trait,char description[],int num
 //---------------------------------------------------------------------------------------------------------------------------------
 // DEBUT DE LA FONCTION MAIN
 //---------------------------------------------------------------------------------------------------------------------------------
-int main()
+int main(int argc,char *argv)
 {
     //---------------------------------------------------------------------------------------------------------------------------------
     // DECLARATIONS ET INITIALISATION
@@ -42,7 +45,8 @@ int main()
     int nbespace = 0;   //compteur d'occurrence du caractere ' ' dans la chaine
     int Ndiag = 0;
     char Nomfichier;
-    char Notes;
+    char Notes[TAILLE_DESCRIPTION];
+    char Lirenotes[TAILLE_DESCRIPTION];
     Tformat Tabnb;
     Tformat Tabcouleur;
     char trait;
@@ -56,10 +60,10 @@ int main()
     }
     //------------------------------------------------------------------------------------
     // VERIFICTION NUMERO DIAGRAMME------------------------------------------------------------------------------------
-    if (!isdigit(atoi(argv[1]))){
+    if (!isdigit(atoi(argv[1])))
         throw("erreur:le numero de diagramme est le premier argument et il doit ne doit contenir que des chiffres");
-    else Ndiag = atoi(argv[1]);
-    }
+    else 
+        Ndiag = atoi(argv[1]);
     //------------------------------------------------------------------------------------
 
 
@@ -139,69 +143,56 @@ int main()
     }
     
 
-//---------------------------------------------------------------------------------------------------------------------------------
-// DEMANDE DU NOM DU FICHIER---------------------------------------------------------------------------------------------------------------------------------
+    //---------------------------------------------------------------------------------------------------------------------------------
+    // DEMANDE DU NOM DU FICHIER---------------------------------------------------------------------------------------------------------------------------------
 
-char choix = 0;
-printf("Voulez vous nommer le fichier de sortie? O/N");
-scanf("%c",&choix);
-while ((toupper(choix) != O) || (toupper(choix) != N)){
-printf("Réponse incorrect, voulez vous nommer le fichier de sortie? O/N");
-}
-if(toupper(choix) == O){
-  printf("Nom du fichier:");
-  fgets(Nomfichier,50,stdin);
-} else {
-  strcpy(Nomfichier, NOM_DU_FICHIER);
-}
-//---------------------------------------------------------------------------------------------------------------------------------
-// DEMANDE DE LA DESCRIPTION---------------------------------------------------------------------------------------------------------------------------------
+    char choix = 0;
+    printf("Voulez vous nommer le fichier de sortie? O/N");
+    scanf("%c",&choix);
+    while ((toupper(choix) != 'O') || (toupper(choix) != 'N')){
+    printf("Réponse incorrect, voulez vous nommer le fichier de sortie? O/N");
+    }
+    if(toupper(choix) == 'O'){
+        printf("Nom du fichier:");
+        fgets(Nomfichier,50,stdin);
+    } else 
+    strcpy(Nomfichier, NOM_PAR_DEFAUT);
+    //---------------------------------------------------------------------------------------------------------------------------------
+    // DEMANDE DE LA DESCRIPTION---------------------------------------------------------------------------------------------------------------------------------
 
-if(fgets(Lirenotes, TAILLE_DESCRIPTION, stdin) != NULL)
-    {
+    if(fgets(Lirenotes, TAILLE_DESCRIPTION, stdin) != NULL){
     	//printfdbg("Debug : Chaine lu : %s\n", lecturedescription);
     	//printfdbg("Debug : Chaine description : %s\n", description);
     	//printfdbg("Debug : Taille de la description : %d\n", (int) strlen(description));
     	strncat(Notes,Lirenotes, TAILLE_DESCRIPTION - strlen(Notes) -1); // on retire la taille de la description et 1 pour ne passer dépasser la tailel de l'espace mémoire et pour garder un caractère pour le caractère de fin
-    }
-	else {
- 		printf("Entrez une description de moins de %d caracteres", TAILLE_DESCRIPTION);
-		scanf("%s", Notes);
-	}
+    }else {
+ 		    printf("Entrez une description de moins de %d caracteres", TAILLE_DESCRIPTION);
+		    scanf("%s", Notes);
+	    }
 		
-    int Lennotes=(int) strlen(description);
+    int Lennotes=(int) strlen(Notes);
 	int j=0;
     int i=0;
     //printf("%d\n", Lennotes); (test)
     for (i = 0; i <= Lennotes; ++i){
     	//printf("%d\n", i);
-    		if (Notes[i]=='\n'){
-    			printfdbg("Debug : passage à la ligne détecté %d\n", i);
-    			
-    			char temp[TAILLE_DESCRIPTION];
-    			strcpy(temp,description);
-    			Notes[i]='<'; 
-    			Notes[i+1]='b'; 
-    			Notes[i+2]='r'; 
-    			Notes[i+3]='>'; 
-				Lennotes = Lennotes + 3;  //on a agrandi la chaine il ne faut pas oublier de le spécifier
-    			for (j = i; j <= Lennotes; ++j){
-    		//On supprime la derniere balise inutile
-    				Notes[j+4]=temp[j+1];
-    				Notes[j+5]='\0';
-    			}
-            }
+    	if (Notes[i]=='\n'){
+    		printfdbg("Debug : passage à la ligne détecté %d\n", i);
+			
+			char temp[TAILLE_DESCRIPTION];
+   			strcpy(temp,Notes);
+   			Notes[i]='<'; 
+   			Notes[i+1]='b'; 
+   			Notes[i+2]='r'; 
+   			Notes[i+3]='>'; 
+			Lennotes = Lennotes + 3;  //on a agrandi la chaine il ne faut pas oublier de le spécifier
+   			for (j = i; j <= Lennotes; ++j){
+   		//On supprime la derniere balise inutile
+   				Notes[j+4]=temp[j+1];
+   				Notes[j+5]='\0';
+   			}
+        }
     }
-
-
-
-
-    // CREATION/REDACTION JSON---------------------------------------------------------------------------------------------------------------------------------
-
-
-
-
-
 
 
 
