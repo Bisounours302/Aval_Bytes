@@ -14,7 +14,7 @@
 #endif
 //---------------------------------------------------------------------------------------------------------------------------------
 #define MAXCAR 51 // au max a l'initialisation -> 24 u + 24 U + ' ' + j + '\0'
-#define NOM_PAR_DEFAUT "diag.txt"
+#define NOM_PAR_DEFAUT "../web/exemples/diag_initial.js"
 #define TAILLE_DESCRIPTION 100
 
 //---------------------------------------------------------------------------------------------------------------------------------
@@ -33,7 +33,7 @@ int validation_3(Tchaine chaine);                   //verifie que le nombre de p
 int validation_4(Tchaine chaine);                                                               //verifie que la quantite de bonus ne depasse pas le nombre de pions dans la tour
 int validation_5(Tchaine chaine);                                                               //verifie que le nombre de pions vaut 48
 void create_Tab(Tchaine chaine, Tchaine Tabnb, Tchaine Tabcouleur);
-void Json(Tformat formatnb,Tformat formatcolor,char trait,char description[],int numdiag, Tchaine numfen, int bonusJ, int bonusR, int malusJ, int malusR);
+void Json(Tformat formatnb,Tformat formatcolor,char trait,char description[],int numdiag, Tchaine numfen, int bonusJ, int bonusR, int malusJ, int malusR, char *Nomfichier);
 //---------------------------------------------------------------------------------------------------------------------------------
 // DEBUT DE LA FONCTION MAIN
 //---------------------------------------------------------------------------------------------------------------------------------
@@ -60,14 +60,11 @@ int main(int argc,char *argv[])
         printf("erreur:la synthaxe attendue est: diag.exe <numero_de_diagramme> \"<position_type_FEN>\"\n");
         return 0;
     }
-    printf("nombre d'arguments : %d\n", argc);
     //------------------------------------------------------------------------------------
     // VERIFICTION NUMERO DIAGRAMME------------------------------------------------------------------------------------
 
     Ndiag = atoi(argv[1]);
     printf("Ndiag : %d\n", Ndiag);
-    printf("fen   : %s\n", argv[2]);
-    printf("fen[0]   : %c\n", argv[2][0]);
     len_argv2 = strlen(argv[2]);
 
     if (0/*!isdigit(Ndiag)*/)
@@ -95,6 +92,7 @@ int main(int argc,char *argv[])
     if(toupper(choix) == 'O'){
         printf("Nom du fichier :");
         fgets(Nomfichier,50,stdin);
+        Nomfichier[strlen(Nomfichier)-1] = '\0';
     } else 
     strcpy(Nomfichier, NOM_PAR_DEFAUT);
     //---------------------------------------------------------------------------------------------------------------------------------
@@ -147,9 +145,6 @@ int main(int argc,char *argv[])
         else
             trait = '2';
 
-		printf("- trait : %c\n", trait);
-
-
         for(int i=0; i < strlen(fen) - 2; i++) // pour tous les caracteres sauf les 2 derniers qui ont deja ete verifies
         {
             if( (fen[i]=='0') || (fen[i]=='1') || (fen[i]=='2') || (fen[i]=='3') || (fen[i]=='4') || (fen[i]=='5') || (fen[i]=='6') || (fen[i]=='7') || (fen[i]=='8') || (fen[i]=='9') )
@@ -199,7 +194,7 @@ int main(int argc,char *argv[])
         }
 
         create_Tab(fen, Tabnb, Tabcouleur);
-        Json(Tabnb, Tabcouleur, trait, Notes, Ndiag, fen, bonusJ, bonusR, malusJ, malusR);
+        Json(Tabnb, Tabcouleur, trait, Notes, Ndiag, fen, bonusJ, bonusR, malusJ, malusR, Nomfichier);
     }
 //---------------------------------------------------------------------------------------------------------------------------------
 // FIN DE LA FONCTION MAIN
@@ -216,7 +211,6 @@ int lire(Tchaine lachaine, char *argv2, int nbMAXcaracAsaisir)
     printf("fen   : %s\n", argv2);
     do  // boucle qui permet d'avoir au maximum 1 seul caractere ' ' dans la chaine
     {
-        printf("fen[%d]   : %c\n", j, argv2[j]);
  	    car=argv2[j];
         j++;
 	    
@@ -691,10 +685,10 @@ void create_Tab(Tchaine chaine, Tchaine Tabnb, Tchaine Tabcouleur)
     }
 }
 
-void Json(Tformat formatnb,Tformat formatcolor,char trait,char description[],int numdiag, Tchaine numfen, int bonusJ, int bonusR, int malusJ, int malusR)
+void Json(Tformat formatnb,Tformat formatcolor,char trait,char description[],int numdiag, Tchaine numfen, int bonusJ, int bonusR, int malusJ, int malusR, char *Nomfichier)
 {
 	printf("Debug : Appel de la fonction json export réussi ! \n");
-	FILE* json=fopen("../web/exemples/diag_initial.js", "w"); // on ouvre le fichier avec w+ pour supprimer le contenu au préalable et récrire à chaque fois, utile car on veut générer un fichier à chaque coup
+	FILE* json=fopen(Nomfichier, "w"); // on ouvre le fichier avec w+ pour supprimer le contenu au préalable et récrire à chaque fois, utile car on veut générer un fichier à chaque coup
 	if(json != NULL)
     {
 		// tous les STR_.. sont dans avalam.h je n'ai fais que suivre ce que le prof a déjà écrit pour la structure json, ca évite d'écrire par exemple \"nb\" on met juste STR_NB avec un %s dans le fprintf et c'est réglé
@@ -713,7 +707,7 @@ void Json(Tformat formatnb,Tformat formatcolor,char trait,char description[],int
 		}
 		fprintf(json,"\n]\n});");
 	    fclose(json); 
-	    printf("\n => Export Json terminé (chemin de fichier : ../web/exemples/diag_initial.js) ! \n");
+	    printf("\n => Export Json terminé (chemin de fichier : %s) ! \n", Nomfichier);
         
 	}
 	else{
