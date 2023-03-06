@@ -14,7 +14,7 @@
 #endif
 //---------------------------------------------------------------------------------------------------------------------------------
 #define MAXCAR 51 // au max a l'initialisation -> 24 u + 24 U + ' ' + j + '\0'
-#define NOM_PAR_DEFAUT "../web/exemples/diag_initial.js"
+#define NOM_PAR_DEFAUT "../web/exemples/diag_test.js"
 #define TAILLE_DESCRIPTION 100
 
 //---------------------------------------------------------------------------------------------------------------------------------
