@@ -1,4 +1,8 @@
+//---------------------------------------------------------------------------------------------------------------------------------
 //Auteurs :  Noé Mejdoub / Mathieu Retourné / Mathis Pollet--Dassonval / Geoffrey Ramos
+//---------------------------------------------------------------------------------------------------------------------------------
+// BIBLIOTHEQUES
+//---------------------------------------------------------------------------------------------------------------------------------
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -13,129 +17,111 @@
   #define DBG 0
 #endif
 //---------------------------------------------------------------------------------------------------------------------------------
-#define MAXCAR 51 // au max a l'initialisation -> 24 u + 24 U + ' ' + j + '\0'
+// PRE PROCESSING
+//---------------------------------------------------------------------------------------------------------------------------------
+#define MAXCAR 55 // au max a l'initialisation -> 24 u + 24 U + b + B + m + M + ' ' + j + '\0'
 #define NOM_PAR_DEFAUT "../web/exemples/diag_test.js"
-#define TAILLE_DESCRIPTION 100
-
+#define TRAIT_DEFAULT '1'
+#define NDIAG_DEFAULT "1"
+#define FEN_DEFAULT "UBubUMumUuuUuUuUUuUuUuUuUuUuuUuUuUuUuUuUUuUuUuuUuU j"
+#define DESCRIPTION_DEFAULT "Voici la position obtenue grace a la chaine FEN"
+#define BJ_DEFAULT 1
+#define BR_DEFAULT 0
+#define MJ_DEFAULT 3
+#define MR_DEFAULT 2
+#define TAILLE_DESCRIPTION 1000
 //---------------------------------------------------------------------------------------------------------------------------------
 typedef char Tchaine[MAXCAR];
 typedef char Tformat[MAXCAR - 2];
 //---------------------------------------------------------------------------------------------------------------------------------
 // PROTOTYPES DES FONCTIONS
 //---------------------------------------------------------------------------------------------------------------------------------
-int lire(Tchaine lachaine, char *argv2, int nbMAXcaracAsaisir);   //lit une chaine et retourne le nombre d'espace dans la chaine
-void afficher(Tchaine chaine);                      //affiche la chaine fen
-int format(Tchaine chaine, int nbesp);              //retourne 1 si la chaine est au bon format
-int rechercher_esp(Tchaine chaine);                 //retourne l'indice du caractere ' ' dans la chaine
-int validation_1(Tchaine chaine, int nbesp);        //verifie les 2 derniers caracteres (espace et r/j)     retourne 1 si validation
-int validation_2(Tchaine chaine);                   //verifie la validite des caracteres                    retourne 1 si validation
-int validation_3(Tchaine chaine);                   //verifie que le nombre de pions vaut 45                retourne 1 si validation
-int validation_4(Tchaine chaine);                                                               //verifie que la quantite de bonus ne depasse pas le nombre de pions dans la tour
-int validation_5(Tchaine chaine);                                                               //verifie que le nombre de pions vaut 48
-void create_Tab(Tchaine chaine, Tchaine Tabnb, Tchaine Tabcouleur);
-void Json(Tformat formatnb,Tformat formatcolor,char trait,char description[],int numdiag, Tchaine numfen, int bonusJ, int bonusR, int malusJ, int malusR, char *Nomfichier);
+int lire(Tchaine lachaine, char *argv2, int nbMAXcaracAsaisir);     //lit une chaine, supprime les mauvais caracteres et retourne le nombre d'espace dans la chaine
+void afficher(Tchaine chaine);                                      //affiche la chaine fen
+int format(Tchaine chaine, int nbesp);                              //retourne 1 si la chaine est au bon format
+int rechercher_esp(Tchaine chaine);                                 //retourne l'indice du caractere ' ' dans la chaine
+int validation_1(Tchaine chaine, int nbesp);                        //verifie les 2 derniers caracteres (espace et r/j)   
+int validation_2(Tchaine chaine);                                   //verifie la saisie des bonus/malus 
+int validation_3(Tchaine chaine);                                   //verifie que la quantite de bonus ne depasse pas le nombre de pions dans la tour
+int validation_4(Tchaine chaine);                                   //verifie que le nombre de pions vaut 48
+void create_Tab(Tchaine chaine, Tchaine Tabnb, Tchaine Tabcouleur); //creer les tableaux Tabnb et Tabcouleur
+void Json(Tformat Tabnb,Tformat Tabcouleur,char trait,char description[],char numdiag[], Tchaine numfen, int bonusJ, int bonusR, int malusJ, int malusR, char *Nomfichier);
 //---------------------------------------------------------------------------------------------------------------------------------
 // DEBUT DE LA FONCTION MAIN
 //---------------------------------------------------------------------------------------------------------------------------------
-int main(int argc,char *argv[])
+int main(int argc, char *argv[])
 {
     //---------------------------------------------------------------------------------------------------------------------------------
     // DECLARATIONS ET INITIALISATION
-    Tchaine fen;        //declaration d'un tableau fen de type Tchaine
-    int nbespace = 0;   //compteur d'occurrence du caractere ' ' dans la chaine
-    char Ndiag;
-    char Nomfichier[50];
-    char Notes[TAILLE_DESCRIPTION];
-    char Lirenotes[TAILLE_DESCRIPTION];
-    Tformat Tabnb;
-    Tformat Tabcouleur;
-    char trait;
-   	int bonusJ, malusJ, bonusR, malusR;
-    int nb_piles = 0;
-    int len_argv2;
+    Tchaine fen;                            //tableau de type Tchaine contenant la chaine fen
+    Tformat Tabnb;                          //tableau de type Tformat contenant le nombre de pions sur chaque case
+    Tformat Tabcouleur;                     //tableau de type Tformat contenant la couleur de la pile sur chaque case
+    char Ndiag[10];                         //stocke le numero diagramme
+    char Nomfichier[50];                    //stocke le nom de fichier
+    char Notes[TAILLE_DESCRIPTION];         //stocke la description
+    char Lirenotes[TAILLE_DESCRIPTION];     //stocke la description (chaine auxiliaire)
+    char trait;                             //stocke le trait
+    char choix = 0;                         //stocke la reponse de l'utilisateur 
+   	int nbespace = 0;                       //stocke le nombre de caractere ' ' dans la chaine
+    int bonusJ, malusJ, bonusR, malusR;     //stockent les positions des bonus/malus
+    int nb_piles = 0;                       //stocke le nombre de piles
+    int len_argv2;                          //stocke la longueur du 2eme argument (fen)
+    int isdigit = 0;                        //variable utilisee pour verifier que le 1er argument (numero diagramme) soit bien un nombre
     //---------------------------------------------------------------------------------------------------------------------------------   
     //LECTECTURE DU FEN ET DU NUMERO DE DIAGRAMME------------------------------------------------------------------------------------
 
     if (argc > 3 || argc < 2) {
-        printf("erreur:la synthaxe attendue est: diag.exe <numero_de_diagramme> \"<position_type_FEN>\"\n");
+        printf("\n* Erreur : la synthaxe attendue est : diag.exe <numero_de_diagramme> \"<position_type_FEN>\"\n\n");
         return 0;
     }
+    strcpy(Ndiag, argv[1]);
+    len_argv2 = strlen(argv[2]);
+    printf("\n");
     //------------------------------------------------------------------------------------
     // VERIFICTION NUMERO DIAGRAMME------------------------------------------------------------------------------------
 
-    Ndiag = atoi(argv[1]);
-    printf("Ndiag : %d\n", Ndiag);
-    len_argv2 = strlen(argv[2]);
-
-    if (0/*!isdigit(Ndiag)*/)
+    do
     {
-        printf("erreur:le numero de diagramme est le premier argument et il doit ne doit contenir que des chiffres\n");
-        return 0;
-    }
-    //------------------------------------------------------------------------------------
+        isdigit = 1;
 
-
-    //VERIFICATION FEN
-    nbespace = lire(fen, argv[2], len_argv2);   //lit la chaine et retourne le nombre d'espace dans la chaine 
-
-    // DEMANDE DU NOM DU FICHIER---------------------------------------------------------------------------------------------------------------------------------
-
-    char choix = 0;
-    printf("Voulez vous nommer le fichier de sortie? O/N :");
-    scanf("%c",&choix);
-    getchar();
-    while ((toupper(choix) != 'O') && (toupper(choix) != 'N')){
-        printf("Réponse incorrect, voulez vous nommer le fichier de sortie? O/N :");
-        scanf("%c",&choix);
-        getchar();
-    }
-    if(toupper(choix) == 'O'){
-        printf("Nom du fichier :");
-        fgets(Nomfichier,50,stdin);
-        Nomfichier[strlen(Nomfichier)-1] = '\0';
-    } else 
-    strcpy(Nomfichier, NOM_PAR_DEFAUT);
-    //---------------------------------------------------------------------------------------------------------------------------------
-    // DEMANDE DE LA DESCRIPTION---------------------------------------------------------------------------------------------------------------------------------
-    printf("Entrez une description de moins de %d caracteres :\n>", TAILLE_DESCRIPTION);
-    if(fgets(Lirenotes, TAILLE_DESCRIPTION, stdin) != "\0"){
-    	printf("Debug : Chaine lu : %s\n", Lirenotes);
-    	//printf("Debug : Chaine description : %s\n", description);
-    	//printf("Debug : Taille de la description : %d\n", (int) strlen(description));
-    	strncat(Notes,Lirenotes, TAILLE_DESCRIPTION - strlen(Notes) -1); // on retire la taille de la description et 1 pour ne passer dépasser la tailel de l'espace mémoire et pour garder un caractère pour le caractère de fin
-    }else {
- 		printf("Entrez une description de moins de %d caracteres :\n>", TAILLE_DESCRIPTION);
-		scanf("%s", Notes);
-	}
-		
-    int Lennotes=(int) strlen(Notes);
-	int j=0;
-    int i=0;
-    //printf("%d\n", Lennotes); (test)
-    for (i = 0; i <= Lennotes; ++i){
-    	//printf("%d\n", i);
-    	if (Notes[i]=='\n'){
-    	    printf("Debug : passage à la ligne détecté %d\n", i);
-			
-		    char temp[TAILLE_DESCRIPTION];
-   		    strcpy(temp,Notes);
-   			Notes[i]='<'; 
-   			Notes[i+1]='b'; 
-   			Notes[i+2]='r'; 
-   			Notes[i+3]='>'; 
-			Lennotes = Lennotes + 3;  //on a agrandi la chaine il ne faut pas oublier de le spécifier
-   			for (j = i; j <= Lennotes; ++j){
-   		        //On supprime la derniere balise inutile
-   			    Notes[j+4]=temp[j+1];
-   		        Notes[j+5]='\0';
-   			}
+        for(int i=0; i < strlen(Ndiag); i++)
+        {
+            if( !((Ndiag[i]=='0') || (Ndiag[i]=='1') || (Ndiag[i]=='2') || (Ndiag[i]=='3') || (Ndiag[i]=='4') || (Ndiag[i]=='5') || (Ndiag[i]=='6') || (Ndiag[i]=='7') || (Ndiag[i]=='8') || (Ndiag[i]=='9')) )
+            {
+                isdigit = 0;
+                printf("# Warning : le numero de diagramme est le premier argument et il doit ne doit contenir que des chiffres\n");
+                printf("Voulez vous definir un nouveau numero de diagramme ? O/N :\n->");
+                scanf("%c",&choix);
+                getchar();
+                while ((toupper(choix) != 'O') && (toupper(choix) != 'N')){
+                    printf("* Réponse incorrect, voulez vous definir un nouveau numero de diagramme ? O/N :\n->");
+                    scanf("%c",&choix);
+                    getchar();
+                }
+                if(toupper(choix) == 'O'){
+                    printf("- Nom du numero de diagramme :\n->");
+                    fgets(Ndiag,10,stdin);
+                    printf("\n");
+                    Ndiag[strlen(Ndiag)-1] = '\0';
+                } 
+                else
+                {
+                    strcpy(Ndiag, NDIAG_DEFAULT);
+                    printf("\n- Warning : un numero a ete defini par default");
+                }
+            } 
         }
     }
-    
+    while(isdigit == 0);   
+    //------------------------------------------------------------------------------------
+    //VERIFICATION FEN
+   
+    nbespace = lire(fen, argv[2], len_argv2);   //lit la chaine et retourne le nombre d'espace dans la chaine 
+
     if(format(fen, nbespace))       //verification du format de la chaine
     {
         //la chaine est valide
-        printf("format valide, voici la chaine fen : ");
+        printf("- Format valide, voici la chaine fen : ");
         afficher(fen);
 
         trait = fen[strlen(fen) - 1];
@@ -192,10 +178,48 @@ int main(int argc,char *argv[])
                 }
             }
         }
-
-        create_Tab(fen, Tabnb, Tabcouleur);
-        Json(Tabnb, Tabcouleur, trait, Notes, Ndiag, fen, bonusJ, bonusR, malusJ, malusR, Nomfichier);
     }
+    else
+    {
+        printf("--> La chaine FEN est donc celle par default <--\n");
+        trait = TRAIT_DEFAULT;
+        strcpy(fen,FEN_DEFAULT);
+        bonusJ = BJ_DEFAULT;
+        bonusR = BR_DEFAULT;
+        malusJ = MJ_DEFAULT;
+        malusR = MR_DEFAULT;
+    }
+    //------------------------------------------------------------------------------------
+    // DEMANDE DU NOM DU FICHIER---------------------------------------------------------------------------------------------------------------------------------
+
+    printf("\n- Voulez vous nommer le fichier de sortie ? O/N :\n->");
+    scanf("%c",&choix);
+    getchar();
+    while ((toupper(choix) != 'O') && (toupper(choix) != 'N')){
+        printf("* Réponse incorrect, voulez vous nommer le fichier de sortie ? O/N :\n->");
+        scanf("%c",&choix);
+        getchar();
+    }
+    if(toupper(choix) == 'O'){
+        printf("- Nom du fichier :\n->");
+        fgets(Nomfichier,50,stdin);
+        Nomfichier[strlen(Nomfichier)-1] = '\0';
+    } else 
+    strcpy(Nomfichier, NOM_PAR_DEFAUT);
+    //---------------------------------------------------------------------------------------------------------------------------------
+    // DEMANDE DE LA DESCRIPTION---------------------------------------------------------------------------------------------------------------------------------
+    printf("\n- Entrez une description de moins de %d caracteres :\n->", TAILLE_DESCRIPTION);
+    if(strlen(fgets(Lirenotes, TAILLE_DESCRIPTION, stdin)) > 1){
+    	printf("\n. Debug : Chaine lu : %s", Lirenotes);
+    	strcpy(Notes, Lirenotes);
+        Notes[strlen(Notes)-1] = '\0';   
+    }else {
+ 		printf("\n# Warning : Aucune description entree, une description par default a ete definie\n");
+		strcpy(Notes, DESCRIPTION_DEFAULT);
+	}
+    create_Tab(fen, Tabnb, Tabcouleur);
+    Json(Tabnb, Tabcouleur, trait, Notes, Ndiag, fen, bonusJ, bonusR, malusJ, malusR, Nomfichier);
+
 //---------------------------------------------------------------------------------------------------------------------------------
 // FIN DE LA FONCTION MAIN
 //---------------------------------------------------------------------------------------------------------------------------------
@@ -205,28 +229,47 @@ int main(int argc,char *argv[])
 //---------------------------------------------------------------------------------------------------------------------------------
 int lire(Tchaine lachaine, char *argv2, int nbMAXcaracAsaisir)
 {   //---------------------------------------------------------------------------------------------------------------------------------
-    char car;           //car est un caractere
-    int i=0,j=0,nbesp=0;    //i est un indice et nbesp est le nombre de caractere espace
+    char car;               //car est un caractere
+    char der = '\0';        //dernier caractere (le trait)
+    int i=0,j=0,l=0,nbesp=0;    //i est un indice et nbesp est le nombre de caractere espace
     //---------------------------------------------------------------------------------------------------------------------------------
-    printf("fen   : %s\n", argv2);
+    //si le trait est bon, on le stocke
+    if( (argv2[nbMAXcaracAsaisir-1] == 'j') || (argv2[nbMAXcaracAsaisir-1] == 'r') )
+        der = argv2[nbMAXcaracAsaisir-1];
+
     do  // boucle qui permet d'avoir au maximum 1 seul caractere ' ' dans la chaine
     {
  	    car=argv2[j];
         j++;
 	    
+        if(l)
+            l++;
 	    if (car!='\n')
 	    {	
-	     	if (car!=' ' ) 
-                // ce n'est pas un espace
-	    		lachaine[i++]=car;
-	     	else
-	    	{ // c'est un espace
-	    	    if (i!=0 && nbesp==0)	
-	    	        {lachaine[i++]=car;nbesp++;}
-	        }
+            //si c'est un caractere valide
+            if( (car=='u') || (car=='d') || (car=='t') || (car=='q') || (car=='c') || (car=='U') || (car=='D') || (car=='T') || (car=='Q') || (car=='C') || (car=='0') || (car=='1') || (car=='2') || (car=='3') || (car=='4') || (car=='5') || (car=='6') || (car=='7') || (car=='8') || (car=='9') || (car=='0') || (car=='b') || (car=='B') || (car=='m') || (car=='M') || (car==' ') )
+            {
+                if (car!=' ' ) 
+                    // ce n'est pas un espace
+	    		    lachaine[i++]=car;
+	     	    else
+	    	    { // c'est un espace
+	    	        if (i!=0 && nbesp==0)	
+	    	            {
+                            lachaine[i++]=car;
+                            nbesp++;
+                            l++;
+                        }
+	            }
+            }
 	    }
     }
-    while(i<nbMAXcaracAsaisir);
+    while(car!='\0' && i<nbMAXcaracAsaisir && l<2);
+
+    if(der!='\0')
+        lachaine[(i++)-1]=der;
+    else
+        lachaine[i++]=der;
     // le caractere \n est rangé dans lachaine !!
     lachaine[i]='\0';
 
@@ -241,22 +284,21 @@ void afficher(Tchaine chaine)
     printf("\n");
 }
 
-
 int format(Tchaine chaine, int nbesp)
 {
-    //si les 5 validations retournent 1 la fonction format retournera aussi 1 !
-    if( ( !validation_1(chaine, nbesp) ) || ( !validation_2(chaine) ) || ( !validation_3(chaine) ) )
+    //si les 4 validations retournent 1 la fonction format retournera aussi 1 !
+    if( ( !validation_1(chaine, nbesp) ) || ( !validation_2(chaine) ) )
         return 0;
     else
-        if( !validation_4(chaine) )
+        if( !validation_3(chaine) )
             return 0;
         else
         {
-            if( !validation_5(chaine) )
+            if( !validation_4(chaine) )
                 return 0;
             else
             {
-                printf("- Apres ajustement, ");
+                printf("- Apres ajustement,\n");
                 return 1;
             }
         }
@@ -278,41 +320,28 @@ int validation_1(Tchaine chaine, int nbesp)
     {
         indice_esp = rechercher_esp(chaine);    //on recherche l'indice du caractere ' ' dans la chaine
 
-        //si le caractere ' ' se situe en avant derniere position et que le dernier caractere est 'r' ou 'j' -> validation numero 1
-        if( ( strlen(chaine) - 2 == indice_esp ) && ( (chaine[indice_esp + 1] == 'r') || (chaine[indice_esp + 1] == 'j') ) )
-            return 1;
-        else
-        {
-            printf("- Erreur de saisie du dernier caractere (rappel : r ou j)\n");
-            return 0;
+        //si le caractere ' ' se situe en avant derniere position 
+        if( strlen(chaine) - 2 == indice_esp )
+        {   //et que le dernier caractere est 'r' ou 'j' -> validation numero 1
+            if( (chaine[indice_esp + 1] == 'r') || (chaine[indice_esp + 1] == 'j') )
+                return 1;
+            else
+                chaine[indice_esp + 1] = 'j';
         }
+        else
+            chaine[indice_esp + 1] = 'j';
     }
-    //si la chaine ne contient pas d'espace -> la chaine n'est pas validee
+    //si la chaine ne contient pas d'espace -> la chaine est modifiee puis validee
     else
     {
-        printf("- Le trait n'est pas defini (rappel : les 2 derniers caracteres sont ' ' puis 'r' ou 'j')\n");
-        return 0;
+        chaine[strlen(chaine)] = ' ';
+        chaine[strlen(chaine)] = 'j';
+        chaine[strlen(chaine)] = '\0';
     }
+    return 1;
 }
 
 int validation_2(Tchaine chaine)
-{
-    for(int i=0; i < strlen(chaine) - 2; i++)
-    {
-        //verifie si tous les caracteres sont parmi cette liste : ['u', 'U', 'd', 'D', 't', 'T', 'q', 'Q', 'c', 'C', 'b', 'B', 'm', 'M']
-        if( (chaine[i]=='u') || (chaine[i]=='d') || (chaine[i]=='t') || (chaine[i]=='q') || (chaine[i]=='c') || (chaine[i]=='U') || (chaine[i]=='D') || (chaine[i]=='T') || (chaine[i]=='Q') || (chaine[i]=='C') || (chaine[i]=='0') || (chaine[i]=='1') || (chaine[i]=='2') || (chaine[i]=='3') || (chaine[i]=='4') || (chaine[i]=='5') || (chaine[i]=='6') || (chaine[i]=='7') || (chaine[i]=='8') || (chaine[i]=='9') || (chaine[i]=='b') || (chaine[i]=='B') || (chaine[i]=='m') || (chaine[i]=='M') )
-            //si oui -> validation numero 2
-            return 1;
-        //si non -> la chaine n'est pas validee
-        else
-        {
-            printf("- Au moins un caractere n'est pas correct (rappel : u, U, d, D, t, T, q, Q, c, C, b, B, m, M)\n");
-            return 0;
-        }
-    }
-}
-
-int validation_3(Tchaine chaine)
 {
     int b=0, B=0, m=0, M=0; //compteur pour chaque bonus/malus
 
@@ -333,12 +362,12 @@ int validation_3(Tchaine chaine)
     else
     {
         //si non, la chaine n'est pas validée
-        printf("- Erreur de saisie des bonus/malus (rappel : chacun des bonus/malus 'b', 'B', 'm' ou 'M' doit etre present UNE fois\n");
+        printf("* Erreur de saisie des bonus/malus (rappel : chacun des bonus/malus 'b', 'B', 'm' ou 'M' doit etre present UNE fois et le premier caractere ne doit pas en etre un)\n");
         return 0;
     }
 }
 
-int validation_4(Tchaine chaine)
+int validation_3(Tchaine chaine)
 {
     int nb_bonus=0; //compteur de bonus/malus present dans une pile
 
@@ -359,14 +388,14 @@ int validation_4(Tchaine chaine)
                 {
                     case 'u' :
                     case 'U' : 
-                        printf("- Plusieurs bonus/malus attribues sur un pion seul\n");
+                        printf("* Plusieurs bonus/malus attribues sur un pion seul\n");
                         return 0;
                     
                     case 'd' :
                     case 'D' :
                         if(nb_bonus > 2)
                         {
-                            printf("- Trop de malus/bonus attribues sur une pile de 2 pions\n");
+                            printf("* Trop de malus/bonus attribues sur une pile de 2 pions\n");
                             return 0;
                         }
                         break;
@@ -375,7 +404,7 @@ int validation_4(Tchaine chaine)
                     case 'T' :
                         if(nb_bonus > 3)
                         {
-                            printf("- Trop de malus/bonus attribues sur une pile de 3 pions\n");
+                            printf("* Trop de malus/bonus attribues sur une pile de 3 pions\n");
                             return 0;
                         }
                         break;
@@ -388,7 +417,7 @@ int validation_4(Tchaine chaine)
     return 1;
 }
 
-int validation_5(Tchaine chaine)
+int validation_4(Tchaine chaine)
 {
     //---------------------------------------------------------------------------------------------------------------------------------
     // declarations et initialisations
@@ -492,7 +521,7 @@ int validation_5(Tchaine chaine)
     
     if(somme > 48) //si somme > 48 alors la chaine n'est pas validee
     {
-        printf("- Le nombre de pions est trop grand (rappel : nombre de pions <= 48)\n");
+        printf("* Le nombre de pions est trop grand (rappel : nombre de pions <= 48)\n");
         return 0;
     }
 
@@ -505,7 +534,7 @@ int validation_5(Tchaine chaine)
         return 1;
     else if(somme > 48) //si somme > 48 alors la chaine n'est pas validee
     {
-        printf("- Le nombre de piles est trop grand (rappel : nombre de piles <= 48)\n");
+        printf("* Le nombre de piles est trop grand (rappel : nombre de piles <= 48)\n");
         return 0;
     }
     else                //si somme < 48 alors la modification de la chaine commence...
@@ -685,32 +714,32 @@ void create_Tab(Tchaine chaine, Tchaine Tabnb, Tchaine Tabcouleur)
     }
 }
 
-void Json(Tformat formatnb,Tformat formatcolor,char trait,char description[],int numdiag, Tchaine numfen, int bonusJ, int bonusR, int malusJ, int malusR, char *Nomfichier)
+void Json(Tformat Tabnb,Tformat Tabcouleur,char trait,char description[],char numdiag[], Tchaine numfen, int bonusJ, int bonusR, int malusJ, int malusR, char *Nomfichier)
 {
-	printf("Debug : Appel de la fonction json export réussi ! \n");
+	printf(". Debug : Appel de la fonction json export réussi ! \n");
 	FILE* json=fopen(Nomfichier, "w"); // on ouvre le fichier avec w+ pour supprimer le contenu au préalable et récrire à chaque fois, utile car on veut générer un fichier à chaque coup
 	if(json != NULL)
     {
 		// tous les STR_.. sont dans avalam.h je n'ai fais que suivre ce que le prof a déjà écrit pour la structure json, ca évite d'écrire par exemple \"nb\" on met juste STR_NB avec un %s dans le fprintf et c'est réglé
-		fprintf(json,"traiterJson({\n\"%s\":%d,","trait ",trait-48);
-		fprintf(json,"\n\"numDiag\":%d,",numdiag);
+		fprintf(json,"traiterJson({\n\"%s\":%d,","trait",trait-48);
+		fprintf(json,"\n\"numDiag\":%s,",numdiag);
 		fprintf(json,"\n\"notes\":\"%s\",",description);
-		fprintf(json,"\n\"fen\":\"%s\"", numfen);
-        fprintf(json,"\n\"bonusJ\":%d", bonusJ);
-        fprintf(json,"\n\"bonusR\":%d", bonusR);
-        fprintf(json,"\n\"malusJ\":%d", malusJ);
-        fprintf(json,"\n\"malusR\":%d", malusR);
+		fprintf(json,"\n\"fen\":\"%s\",", numfen);
+        fprintf(json,"\n\"bonusJ\":%d,", bonusJ);
+        fprintf(json,"\n\"malusJ\":%d,", malusJ);
+        fprintf(json,"\n\"bonusR\":%d,", bonusR);
+        fprintf(json,"\n\"malusR\":%d,", malusR);
         fprintf(json,"\n%s:[",STR_COLS);
 		for (int i = 0; i < NBCASES; ++i)
 		{
-			fprintf(json,"\n\t{%s:%d, %s:%d},",STR_NB,formatnb[i],STR_COULEUR,formatcolor[i]);//boucle des positions
+			fprintf(json,"\n\t{%s:%d, %s:%d},",STR_NB,Tabnb[i],STR_COULEUR,Tabcouleur[i]);//boucle des positions
 		}
 		fprintf(json,"\n]\n});");
 	    fclose(json); 
-	    printf("\n => Export Json terminé (chemin de fichier : %s) ! \n", Nomfichier);
+	    printf("\n=> Export Json terminé (chemin de fichier : %s) ! \n\n", Nomfichier);
         
 	}
 	else{
-        printf("erreur");
+        printf("\n* Erreur lors de l'ouverture du fichier Json\n\n");
     }
 }
