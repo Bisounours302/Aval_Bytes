@@ -107,7 +107,7 @@ int main(int argc, char *argv[])
                 else
                 {
                     strcpy(Ndiag, NDIAG_DEFAULT);
-                    printf("\n- Warning : un numero a ete defini par defaut\n");
+                    printf("\n# Warning : un numero a ete defini par defaut\n");
                 }
             } 
         }
@@ -362,7 +362,7 @@ int validation_2(Tchaine chaine)
     else
     {
         //si non, la chaine n'est pas validée
-        printf("* Erreur de saisie des bonus/malus (rappel : chacun des bonus/malus 'b', 'B', 'm' ou 'M' doit etre present UNE fois et le premier caractere ne doit pas en etre un)\n");
+        printf("# Warning : Erreur de saisie des bonus/malus (rappel : chacun des bonus/malus 'b', 'B', 'm' ou 'M' doit etre present UNE fois et le premier caractere ne doit pas en etre un)\n");
         return 0;
     }
 }
