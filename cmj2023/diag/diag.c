@@ -107,7 +107,7 @@ int main(int argc, char *argv[])
                 else
                 {
                     strcpy(Ndiag, NDIAG_DEFAULT);
-                    printf("\n- Warning : un numero a ete defini par default");
+                    printf("\n- Warning : un numero a ete defini par defaut\n");
                 }
             } 
         }
@@ -181,7 +181,7 @@ int main(int argc, char *argv[])
     }
     else
     {
-        printf("--> La chaine FEN est donc celle par default <--\n");
+        printf("--> La chaine FEN est donc celle par defaut <--\n");
         trait = TRAIT_DEFAULT;
         strcpy(fen,FEN_DEFAULT);
         bonusJ = BJ_DEFAULT;
@@ -214,7 +214,7 @@ int main(int argc, char *argv[])
     	strcpy(Notes, Lirenotes);
         Notes[strlen(Notes)-1] = '\0';   
     }else {
- 		printf("\n# Warning : Aucune description entree, une description par default a ete definie\n");
+ 		printf("\n# Warning : Aucune description entree, une description par defaut a ete definie\n");
 		strcpy(Notes, DESCRIPTION_DEFAULT);
 	}
     create_Tab(fen, Tabnb, Tabcouleur);
