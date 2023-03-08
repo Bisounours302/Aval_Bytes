@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
             {
                 isdigit = 0;
                 printf("# Warning : le numero de diagramme est le premier argument et il doit ne doit contenir que des chiffres\n");
-                printf("Voulez vous definir un nouveau numero de diagramme ? O/N :\n->");
+                printf("- Voulez vous definir un nouveau numero de diagramme ? O/N :\n->");
                 scanf("%c",&choix);
                 getchar();
                 while ((toupper(choix) != 'O') && (toupper(choix) != 'N')){
@@ -181,7 +181,7 @@ int main(int argc, char *argv[])
     }
     else
     {
-        printf("--> La chaine FEN est donc celle par defaut <--\n");
+        printf("# Warning : La chaine FEN est donc celle par defaut\n");
         trait = TRAIT_DEFAULT;
         strcpy(fen,FEN_DEFAULT);
         bonusJ = BJ_DEFAULT;
@@ -267,7 +267,10 @@ int lire(Tchaine lachaine, char *argv2, int nbMAXcaracAsaisir)
     while(car!='\0' && i<nbMAXcaracAsaisir && l<2);
 
     if(der!='\0')
-        lachaine[(i++)-1]=der;
+    {
+        lachaine[i]=der;
+        i++;
+    }
     else
         lachaine[i++]=der;
     // le caractere \n est rangé dans lachaine !!
@@ -298,7 +301,7 @@ int format(Tchaine chaine, int nbesp)
                 return 0;
             else
             {
-                printf("- Apres ajustement,\n");
+                printf("# Warning : Apres ajustement,\n");
                 return 1;
             }
         }
@@ -388,14 +391,14 @@ int validation_3(Tchaine chaine)
                 {
                     case 'u' :
                     case 'U' : 
-                        printf("* Plusieurs bonus/malus attribues sur un pion seul\n");
+                        printf("# Warning : Plusieurs bonus/malus attribues sur un pion seul\n");
                         return 0;
                     
                     case 'd' :
                     case 'D' :
                         if(nb_bonus > 2)
                         {
-                            printf("* Trop de malus/bonus attribues sur une pile de 2 pions\n");
+                            printf("# Warning : Trop de malus/bonus attribues sur une pile de 2 pions\n");
                             return 0;
                         }
                         break;
@@ -404,7 +407,7 @@ int validation_3(Tchaine chaine)
                     case 'T' :
                         if(nb_bonus > 3)
                         {
-                            printf("* Trop de malus/bonus attribues sur une pile de 3 pions\n");
+                            printf("# Warning : Trop de malus/bonus attribues sur une pile de 3 pions\n");
                             return 0;
                         }
                         break;
@@ -521,7 +524,7 @@ int validation_4(Tchaine chaine)
     
     if(somme > 48) //si somme > 48 alors la chaine n'est pas validee
     {
-        printf("* Le nombre de pions est trop grand (rappel : nombre de pions <= 48)\n");
+        printf("# Warning :Le nombre de pions est trop grand (rappel : nombre de pions <= 48)\n");
         return 0;
     }
 
@@ -534,7 +537,7 @@ int validation_4(Tchaine chaine)
         return 1;
     else if(somme > 48) //si somme > 48 alors la chaine n'est pas validee
     {
-        printf("* Le nombre de piles est trop grand (rappel : nombre de piles <= 48)\n");
+        printf("# Warning : Le nombre de piles est trop grand (rappel : nombre de piles <= 48)\n");
         return 0;
     }
     else                //si somme < 48 alors la modification de la chaine commence...
@@ -740,6 +743,6 @@ void Json(Tformat Tabnb,Tformat Tabcouleur,char trait,char description[],char nu
         
 	}
 	else{
-        printf("\n* Erreur lors de l'ouverture du fichier Json\n\n");
+        printf("\n* Erreur : Ouverture du fichier Json impossible !\n\n");
     }
 }
