@@ -156,19 +156,19 @@ int main(int argc, char *argv[])
                     switch(fen[i])
                     {
                         case 'b' :
-                            bonusJ = nb_piles;
+                            bonusJ = nb_piles-1;
                             break;
                     
                         case 'B' :
-                            bonusR = nb_piles;
+                            bonusR = nb_piles-1;
                             break;
 
                         case 'm' :
-                            malusJ = nb_piles;
+                            malusJ = nb_piles-1;
                             break;
                     
                         case 'M' :
-                            malusR = nb_piles;
+                            malusR = nb_piles-1;
                             break;
                     }
                 }
@@ -300,10 +300,7 @@ int format(Tchaine chaine, int nbesp)
             if( !validation_4(chaine) )
                 return 0;
             else
-            {
-                printf("# Warning : Apres ajustement,\n");
                 return 1;
-            }
         }
 }
 
@@ -360,12 +357,12 @@ int validation_2(Tchaine chaine)
             M++;
     }
     
-    if(b && B && m && M)    //verifie que chaque bonus/malus n'est present qu'une seule fois
+    if((b<=1) && (B<=1) && (m<=1) && (M<=1))    //verifie que chaque bonus/malus n'est present qu'une seule fois au maximum
         return 1;   //si oui -> verifacaion numero 3
     else
     {
         //si non, la chaine n'est pas validée
-        printf("# Warning : Erreur de saisie des bonus/malus (rappel : chacun des bonus/malus 'b', 'B', 'm' ou 'M' doit etre present UNE fois et le premier caractere ne doit pas en etre un)\n");
+        printf("# Warning : Erreur de saisie des bonus/malus (rappel : chacun des bonus/malus 'b', 'B', 'm' ou 'M' doit etre present une fois au maximum et le premier caractere ne doit pas en etre un)\n");
         return 0;
     }
 }
@@ -424,8 +421,8 @@ int validation_4(Tchaine chaine)
 {
     //---------------------------------------------------------------------------------------------------------------------------------
     // declarations et initialisations
-    int Tabpion[MAXCAR] = {0};    //Tabpion est un tableau dans lequel est indique le nombre de pions pour chaque caractere de la chaine fen 
-    int Tabpile[MAXCAR] = {0};    //Tabpile est un tableau dans lequel est indique le nombre de piles pour chaque caractere de la chaine fen 
+    int Tabpion[MAXCAR] = {0};  //Tabpion est un tableau dans lequel est indique le nombre de pions pour chaque caractere de la chaine fen 
+    int Tabpile[MAXCAR] = {0};  //Tabpile est un tableau dans lequel est indique le nombre de piles pour chaque caractere de la chaine fen 
     int nb_element = 0;         //est le nombre d'elements dans Tabpion et Tabpile
     int somme = 0;              //est la somme des elements de Tabpion (qui doit etre egale a 48)
     int aux;                    //variable temporaire pour permettre de modifier la chaine fen lorsqu'elle est trop courte
@@ -575,8 +572,7 @@ int validation_4(Tchaine chaine)
                 chaine[indice_esp] = unite + 48;
                 chaine[indice_esp + 1] = ' ';
                 chaine[indice_esp + 2] = aux;
-                chaine[indice_esp + 3] = '\0';
-                
+                chaine[indice_esp + 3] = '\0';  
             }
         }
         //le dernier caractere avant l'espace n'est pas un chiffre
@@ -598,6 +594,7 @@ int validation_4(Tchaine chaine)
             //si le nombre de pions est inferieur a 10 alors on peut ajouter un seul chiffre
             else
             {
+                aux = chaine[indice_esp + 1];
                 chaine[indice_esp] = 48 - somme + 48;
                 chaine[indice_esp + 1] = ' ';
                 chaine[indice_esp + 2] = aux;
@@ -606,6 +603,8 @@ int validation_4(Tchaine chaine)
         }
         
         //la chaine a ete modifiée, elle est donc validée
+
+        printf("# Warning : Apres ajustement,\n");
         return 1;
     }
     printf("\n");
