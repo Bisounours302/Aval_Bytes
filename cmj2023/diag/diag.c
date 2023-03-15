@@ -3,6 +3,7 @@
 //---------------------------------------------------------------------------------------------------------------------------------
 /* OBJECTIFS :  - optimiser le code
                 - faire en sorte qu'une modification n'en entraine pas une autre
+                - faire un meilleur affichage de la description lue
                 - commenter tout
 */
 //---------------------------------------------------------------------------------------------------------------------------------
@@ -19,7 +20,7 @@
 #ifdef __DEBUG__
   #define DBG 1
 #else
-  #define DBG 1
+  #define DBG 0
 #endif
 //---------------------------------------------------------------------------------------------------------------------------------
 // CONSTANTES SYMBOLIQUE
@@ -110,7 +111,8 @@ int lire_arguments(Tdiag Ndiag, int argc, char *argv[])
 {
     int len;
 
-    if (argc > 4 || argc < 3) {
+    if (argc > 4 || argc < 3) 
+    {
         fprintf(stderr, "\n\033[31m* Erreur : la synthaxe attendue est : diag.exe <numero_de_diagramme> \"<position_type_FEN>\"");
         fprintf(stderr, "\n                                 ou : diag.exe <numero_de_diagramme> \"<position_type_FEN>\" < <nom_fichier> cat <nom_fichier>\033[0m\n\n");
         return 0;
@@ -119,8 +121,7 @@ int lire_arguments(Tdiag Ndiag, int argc, char *argv[])
     strcpy(Ndiag, argv[1]);
     len = strlen(argv[2])+1;
 
-    if(DBG)
-        printf("\n");
+    printf("\n");
 
     verif_Ndiag(Ndiag);
 
@@ -817,10 +818,12 @@ void Nommer_fichier(Tfichier nom)
     
     if(!strcmp(nom,""))
         strcpy(nom, NOM_PAR_DEFAUT);
+
+    printf("\n");
     
     if(DBG)
     {
-        printf("\n\033[94m. Debug : Nom du fichier : ");
+        printf("\033[94m. Debug : Nom du fichier : ");
         afficher_chaine(nom);
     }
 }
@@ -844,7 +847,7 @@ void Lire_description(Tdescription notes)
 
     if(DBG)
     {
-        printf("\n\033[94m. Debug : Commentaire lu :\n");
+        printf("\n\033[94m. Debug : Description lue :\n");
         afficher_chaine(notes);
     }
     
@@ -1002,7 +1005,7 @@ void create_Json(Tformat Tabnb,Tformat Tabcouleur,char trait,char description[],
 	FILE* json=fopen(Nomfichier, "w"); // on ouvre le fichier avec w+ pour supprimer le contenu au préalable et récrire à chaque fois, utile car on veut générer un fichier à chaque coup
 	
     if(DBG)
-        printf("\033[94m. Debug : Appel de la fonction json export réussi ! \n");
+        printf("\033[94m. Debug : Appel de la fonction json export réussi !\n");
 	
     if(json != NULL)
     {
@@ -1024,10 +1027,11 @@ void create_Json(Tformat Tabnb,Tformat Tabcouleur,char trait,char description[],
 	    fclose(json);
         
         if(DBG) 
-	        printf("\n\033[94m. Debug : Export Json terminé (chemin de fichier : \"%s\") ! \n\n", Nomfichier);
+	        printf("\n\033[94m. Debug : Export Json terminé (chemin de fichier : \"%s\") ! \n", Nomfichier);
         
 	}
 	else
-        if(DBG)
-            fprintf(stderr, "\n\033[31m* Erreur : Ouverture du fichier Json impossible !\033[0m\n\n");
+        fprintf(stderr, "\n\033[31m* Erreur : Ouverture du fichier Json impossible !\033[0m\n");
+    
+    printf("\n");
 }
