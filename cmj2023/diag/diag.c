@@ -20,7 +20,7 @@
 #ifdef __DEBUG__
   #define DBG 1
 #else
-  #define DBG 0
+  #define DBG 1
 #endif
 //---------------------------------------------------------------------------------------------------------------------------------
 // CONSTANTES SYMBOLIQUE
@@ -111,7 +111,7 @@ int lire_arguments(Tdiag Ndiag, int argc, char *argv[])
 {
     int len;
 
-    if (argc > 4 || argc < 3) 
+    if (argc < 3) 
     {
         fprintf(stderr, "\n\033[31m* Erreur : la synthaxe attendue est : diag.exe <numero_de_diagramme> \"<position_type_FEN>\"");
         fprintf(stderr, "\n                                 ou : diag.exe <numero_de_diagramme> \"<position_type_FEN>\" < <nom_fichier> cat <nom_fichier>\033[0m\n\n");
@@ -485,6 +485,7 @@ int validation_4(Tchaine chaine, int *modifA, int *modifB)
     int indice_esp;             //indice du caractere ' '
     int j;
     int pos = strlen(chaine)-3;
+    int modifC = 0;
     //-----------------------------------------------------------------------------------------------------------------------------
     
     for(int i=0; i < strlen(chaine) - 2; i++) // pour tous les caracteres sauf les 2 derniers qui ont deja ete verifies
@@ -633,16 +634,6 @@ int validation_4(Tchaine chaine, int *modifA, int *modifB)
         *modifA=1;
         return 0;
     }
-    
-    if(*modifA)
-    {
-        if(DBG)
-        {
-            printf("\033[35m# Warning : Le nombre de pions est trop grand. Rappel : Le nombre de pions doit être inférieur ou égal à 48.\n");
-            printf("            Après modification, fen : ");
-            afficher_chaine(chaine);
-        }
-    }
 
     somme=0;
 
@@ -656,16 +647,6 @@ int validation_4(Tchaine chaine, int *modifA, int *modifB)
         return 0;
     }
     
-    if(*modifB)
-    {
-        if(DBG)
-        {
-            printf("\033[35m# Warning : Le nombre de piles est trop grand. Rappel : Le nombre de piles doit être égal à 48.\n");
-            printf("            Après modification, fen : ");
-            afficher_chaine(chaine);
-        }
-    }
-
     if(somme < 48)    //si somme < 48 alors la modification de la chaine commence...
     {
         indice_esp = rechercher_esp(chaine); //tout d'abord on recherche la position du caractere ' '
@@ -730,14 +711,33 @@ int validation_4(Tchaine chaine, int *modifA, int *modifB)
                 chaine[indice_esp + 3] = '\0';
             }  
         }
-        
-        if(DBG)
+        modifC = 1;
+    }
+
+    if(DBG)
+    {
+        if(*modifA)
+        {
+            printf("\033[35m# Warning : Le nombre de pions est trop grand. Rappel : Le nombre de pions doit être inférieur ou égal à 48.\n");
+            printf("            Après modification, fen : ");
+            afficher_chaine(chaine);
+        }
+
+        if(*modifB)
+        {
+            printf("\033[35m# Warning : Le nombre de piles est trop grand. Rappel : Le nombre de piles doit être égal à 48.\n");
+            printf("            Après modification, fen : ");
+            afficher_chaine(chaine);
+        }
+            
+        if(modifC)
         {
             printf("\033[35m# Warning : Le nombre de piles est trop petit. Rappel : Le nombre de piles doit être égal à 48.\n");
             printf("            Après modification, fen : ");
             afficher_chaine(chaine);
-        }
+        }   
     }
+    
     supprimer_zero(chaine);
     if(somme == 48)     //si somme vaut 48 -> validation numero 4 !
         return 1;
